@@ -42,7 +42,7 @@ def translate_text_easypeasy(api_key, text):
         "x-api-key": api_key
     }
     payload = {
-        "message": f"translate this text '{text}' into Malay language. Only return the translated text and make it structural like an article.",
+        "message": f"translate this text '{text}' into Malay language. Only return the translated text and make it structural like an article. I don't want you to add any note only give the translated answer",
         "history": [],
         "stream": False
     }
