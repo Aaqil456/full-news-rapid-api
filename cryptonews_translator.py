@@ -16,7 +16,7 @@ def translate_text_gemini(text):
 
     headers = {"Content-Type": "application/json"}
     payload = {
-        "contents": [{"parts": [{"text": f"Translate this text '{text}' into Malay."}]}]
+        "contents": [{"parts": [{"text": f"Translate this text '{text}' into Malay. Only return the translated text, structured like an article."}]}]
     }
 
     max_retries = 5
