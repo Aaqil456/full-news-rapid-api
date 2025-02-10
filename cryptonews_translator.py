@@ -16,10 +16,13 @@ def translate_text_gemini(text):
 
     headers = {"Content-Type": "application/json"}
     payload = {
-        "contents": [{"parts": [{"text": f"Translate this text '{text}' into Malay. Only return the translated text, structured like an article."}]}]
+        "contents": [{"parts": [{"text": f"Translate this text '{text}' into Malay."}]}]
     }
 
-    for attempt in range(5):  # Retry up to 5 times
+    max_retries = 5
+    delay = 2  # Start with 2 seconds delay
+
+    for attempt in range(max_retries):
         try:
             response = requests.post(GEMINI_API_URL, headers=headers, json=payload)
             if response.status_code == 200:
@@ -27,15 +30,17 @@ def translate_text_gemini(text):
                 translated_text = response_data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "Translation failed")
                 return translated_text.strip() if translated_text != "Translation failed" else "Translation failed"
             elif response.status_code == 429:
-                wait_time = 2**attempt  # Exponential backoff (2, 4, 8, 16, 32 sec)
-                print(f"Rate limit exceeded. Retrying in {wait_time} seconds...")
-                time.sleep(wait_time)
+                print(f"Rate limit exceeded. Retrying in {delay} seconds...")
+                time.sleep(delay)
+                delay *= 2  # Exponential backoff (2s → 4s → 8s → 16s → 32s)
             else:
                 print(f"Gemini API error: {response.status_code}, {response.text}")
                 return "Translation failed"
         except Exception as e:
             print(f"[ERROR] Gemini API request failed: {e}")
             return "Translation failed"
+    
+    print("[ERROR] Max retries reached for translation.")
     return "Translation failed"
 
 # Function to fetch news from Apify Actor API
@@ -48,13 +53,10 @@ def fetch_news_from_apify(api_token):
             news_data = response.json()
             news_list = []
             for news in news_data:
-                # Log fetched news for debugging
-                print(f"Fetched news item: {news}")
-
                 # Ensure each field is handled safely
                 news_list.append({
                     "title": news.get("title", "Untitled"),
-                    "url": news.get("link"),  # May be None if missing
+                    "url": news.get("link", ""),  # Default to empty string if missing
                     "description": news.get("summary", "No summary available."),
                     "image": news.get("image", ""),
                     "content": news.get("content", "No content available."),
@@ -80,7 +82,7 @@ def remove_duplicates(news_list):
     seen_urls = set()
     unique_news = []
     for news in news_list:
-        news_url = news.get("url")  # Use .get() to prevent KeyError
+        news_url = news.get("url", "")  # Default to empty string if missing
         if news_url and news_url not in seen_urls:
             unique_news.append(news)
             seen_urls.add(news_url)
@@ -109,7 +111,7 @@ def main():
     for news in fetched_news:
         original_title = news["title"]
         original_description = news["description"]
-        original_content = news["content"]
+        original_content = news.get("content", "No content available.")  # Fixes NoneType error
 
         translated_title = translate_text_gemini(original_title)
         translated_description = translate_text_gemini(original_description)
@@ -132,7 +134,7 @@ def main():
     print("\nNewly Added News:")
     new_news = [news for news in combined_news if news not in existing_data.get("all_news", [])]
     for news in new_news:
-        print(f"Title: {news['title']}\nURL: {news.get('url', 'No URL')}\nContent Snippet: {news.get('content', '')[:100]}...\n")
+        print(f"Title: {news['title']}\nURL: {news.get('url', 'No URL')}\nContent Snippet: {news.get('content', 'No content available.')[:100]}...\n")  # Fixes NoneType error
 
 if __name__ == "__main__":
     main()
