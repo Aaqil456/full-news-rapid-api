@@ -12,7 +12,7 @@ GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemin
 # Function to translate text using Gemini API (with rate limit handling)
 def translate_text_gemini(text):
     if not text or text.strip() == "":  # Skip empty text
-        return text  # Return original text
+        return "Translation failed"  # Mark it as failed translation
 
     headers = {"Content-Type": "application/json"}
     payload = {
@@ -107,6 +107,8 @@ def main():
 
     print("Translating news content using Gemini API...")
     translated_news = []
+    total_success = 0
+    total_failed = 0
 
     for news in fetched_news:
         original_title = news["title"]
@@ -123,13 +125,18 @@ def main():
             news["description"] = translated_description if translated_description != "Translation failed" else original_description
             news["content"] = translated_content if translated_content != "Translation failed" else original_content
             translated_news.append(news)
+            total_success += 1  # Increment successful translation count
         else:
             print(f"Skipping news (translation failed for all fields): {original_title}")
+            total_failed += 1  # Increment failed translation count
 
     existing_data = load_existing_data()
     combined_news = remove_duplicates(translated_news + existing_data.get("all_news", []))
 
     save_to_json(combined_news)
+
+    print(f"\n✅ Total Successfully Translated Articles: {total_success}")
+    print(f"❌ Total Failed Translations: {total_failed}")
 
     print("\nNewly Added News:")
     for news in combined_news:
