@@ -97,8 +97,8 @@ def post_to_wordpress(title, content, original_url, image_url, media_id=None, st
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
 
-    # Embed image at the top and link at the bottom
-    full_content = f'<img src="{image_url}" alt="{title}"/>\n\n{content}\n\n<p>📌 <a href="{original_url}" target="_blank">Baca artikel asal di sini.</a></p>'
+    # Embed image at the top and link at the bottom (opens in new tab)
+    full_content = f'<img src="{image_url}" alt="{title}"/>\n\n{content}\n\n<p>📌 <a href="{original_url}" target="_blank" rel="noopener noreferrer">Baca artikel asal di sini.</a></p>'
 
     post_data = {
         "title": title,
