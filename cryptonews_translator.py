@@ -97,8 +97,10 @@ def post_to_wordpress(title, content, original_url, image_url, media_id=None, st
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
 
-    # Embed image at the top and prevent oEmbed for the link
+    # Embed title, image at the top and prevent oEmbed for the link
     full_content = f'''
+<h1>{title}</h1>
+
 <img src="{image_url}" alt="{title}"/>
 
 {content}
