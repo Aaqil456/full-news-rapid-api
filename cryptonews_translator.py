@@ -65,7 +65,10 @@ def upload_image_to_wordpress(image_url):
         return None, None
 
     try:
-        response = requests.get(image_url)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        }
+        response = requests.get(image_url, headers=headers)
         if response.status_code != 200:
             print(f"[Image Download Error] {response.status_code}: Unable to fetch image.")
             return None, None
@@ -97,7 +100,7 @@ def upload_image_to_wordpress(image_url):
         return None, None
 
 
-def post_to_wordpress(title, content, original_url, image_url, media_id=None, status="publish"):
+def post_to_wordpress(title, content, original_url, image_url=None, media_id=None, status="publish"):
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
     post_endpoint = f"{WP_URL}/posts"
