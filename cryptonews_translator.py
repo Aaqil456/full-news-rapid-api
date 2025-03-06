@@ -62,17 +62,17 @@ def fetch_news_from_apify():
 def upload_image_to_wordpress(image_url):
     if not image_url:
         print("[SKIP] No image URL provided.")
-        return None
+        return None, None
 
     try:
         response = requests.get(image_url)
         if response.status_code != 200:
             print(f"[Image Download Error] {response.status_code}: Unable to fetch image.")
-            return None
+            return None, None
         image_data = response.content
     except Exception as e:
         print(f"[Image Download Exception] {e}")
-        return None
+        return None, None
 
     media_endpoint = f"{WP_URL}/media"
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
@@ -87,12 +87,14 @@ def upload_image_to_wordpress(image_url):
 
     response = requests.post(media_endpoint, headers=headers, data=image_data)
     if response.status_code == 201:
-        media_id = response.json().get("id")
+        media_data = response.json()
+        media_id = media_data.get("id")
+        media_url = media_data.get("source_url")
         print(f"[Image Uploaded] Media ID: {media_id}")
-        return media_id
+        return media_id, media_url
     else:
         print(f"[Image Upload Error] {response.status_code}: {response.text}")
-        return None
+        return None, None
 
 
 def post_to_wordpress(title, content, original_url, image_url, media_id=None, status="publish"):
@@ -177,15 +179,17 @@ def main():
             print(f"[SKIP] Translation failed for '{news.get('title', 'Untitled')}'. Skipping this news.")
             continue
 
-        media_id = upload_image_to_wordpress(image_url)
+        media_id, uploaded_image_url = upload_image_to_wordpress(image_url)
 
-        post_success = post_to_wordpress(title, content, original_url, image_url if media_id else None, media_id)
+        image_in_post_url = uploaded_image_url if uploaded_image_url else None
+
+        post_success = post_to_wordpress(title, content, original_url, image_in_post_url, media_id)
 
         translated_news.append({
             "title": title,
             "description": description,
             "content": content,
-            "image": image_url,
+            "image": uploaded_image_url,
             "url": original_url,
             "source": source,
             "timestamp": news.get("time", datetime.now().isoformat()),
