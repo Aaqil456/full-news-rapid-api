@@ -130,8 +130,8 @@ Feel free to fork, submit issues, or create pull requests if you'd like to enhan
 ## 📬 Contact
 
 For questions, collaborations, or custom automation:
-- LinkedIn: [Your LinkedIn Profile](https://linkedin.com/in/yourprofile)
-- Twitter (X): [@yourhandle](https://twitter.com/yourhandle)
+- LinkedIn: [Your LinkedIn Profile](https://www.linkedin.com/in/aaqil-ahamad-1393241ab/)
+- Twitter (X): [@yourhandle](https://x.com/aaqil_ahamad)
 
 ---
 
@@ -141,6 +141,3 @@ MIT License. Free to use and modify.
 
 ---
 
-Would you like me to:
-✅ Add this directly into your GitHub repo?  
-✅ Provide a matching **`requirements.txt`** for easy installation?
