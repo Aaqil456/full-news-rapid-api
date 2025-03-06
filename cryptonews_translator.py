@@ -13,11 +13,9 @@ WP_URL = os.getenv("WP_URL", "https://teknologiblockchain.com/wp-json/wp/v2")
 WP_USER = os.getenv("WP_USER")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 
-# WordPress Category ID for "News"
 NEWS_CATEGORY_ID = 1413
 
 
-# Translate text using Gemini API
 def translate_text_gemini(text):
     if not text or not isinstance(text, str) or not text.strip():
         return "Translation failed"
@@ -25,7 +23,7 @@ def translate_text_gemini(text):
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     headers = {"Content-Type": "application/json"}
     payload = {
-        "contents": [{"parts": [{"text": f"Translate this text '{text}' into Malay. Only return the translated text, structured like an article. Please exclude or don't take any sentences that looks like an advertisment from the text"}]}]
+        "contents": [{"parts": [{"text": f"Translate this text '{text}' into Malay. Only return the translated text, structured like an article. Please exclude or don't take any sentences that looks like an advertisement from the text"}]}]
     }
 
     for attempt in range(5):
@@ -47,7 +45,6 @@ def translate_text_gemini(text):
     return "Translation failed"
 
 
-# Fetch news from Apify
 def fetch_news_from_apify():
     url = f"https://api.apify.com/v2/acts/buseta~crypto-news/run-sync-get-dataset-items?token={APIFY_API_TOKEN}"
     try:
@@ -62,17 +59,24 @@ def fetch_news_from_apify():
         return []
 
 
-# Upload image to WordPress and return media ID
 def upload_image_to_wordpress(image_url):
+    if not image_url:
+        print("[SKIP] No image URL provided.")
+        return None
+
+    try:
+        response = requests.get(image_url)
+        if response.status_code != 200:
+            print(f"[Image Download Error] {response.status_code}: Unable to fetch image.")
+            return None
+        image_data = response.content
+    except Exception as e:
+        print(f"[Image Download Exception] {e}")
+        return None
+
     media_endpoint = f"{WP_URL}/media"
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
-
-    try:
-        image_data = requests.get(image_url).content
-    except Exception as e:
-        print(f"[Image Download Error] {e}")
-        return None
 
     file_name = image_url.split("/")[-1]
     headers = {
@@ -91,16 +95,17 @@ def upload_image_to_wordpress(image_url):
         return None
 
 
-# Post to WordPress with featured image, category, and formatted content
 def post_to_wordpress(title, content, original_url, image_url, media_id=None, status="publish"):
-    post_endpoint = f"{WP_URL}/posts"
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
+    post_endpoint = f"{WP_URL}/posts"
+
+    image_html = f'<img src="{image_url}" alt="{title}"/>' if image_url else ""
 
     full_content = f'''
 <h1>{title}</h1>
 
-<img src="{image_url}" alt="{title}"/>
+{image_html}
 
 {content}
 
@@ -130,7 +135,6 @@ def post_to_wordpress(title, content, original_url, image_url, media_id=None, st
         return False
 
 
-# Save the latest news batch to JSON
 def save_to_json(news_list, filename="translated_news.json"):
     output = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -141,7 +145,6 @@ def save_to_json(news_list, filename="translated_news.json"):
     print(f"[JSON Saved] {filename}")
 
 
-# Main function
 def main():
     if not APIFY_API_TOKEN or not GEMINI_API_KEY or not WP_USER or not WP_APP_PASSWORD:
         print("[ERROR] One or more environment variables are missing!")
@@ -174,9 +177,9 @@ def main():
             print(f"[SKIP] Translation failed for '{news.get('title', 'Untitled')}'. Skipping this news.")
             continue
 
-        media_id = upload_image_to_wordpress(image_url) if image_url else None
+        media_id = upload_image_to_wordpress(image_url)
 
-        post_success = post_to_wordpress(title, content, original_url, image_url, media_id)
+        post_success = post_to_wordpress(title, content, original_url, image_url if media_id else None, media_id)
 
         translated_news.append({
             "title": title,
