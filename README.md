@@ -1,5 +1,3 @@
-Sure! Here's a **complete README.md** documentation for your project, designed to be clear, professional, and GitHub-ready:  
-
 ---
 
 # 🚀 Crypto News Translator & WordPress Publisher
