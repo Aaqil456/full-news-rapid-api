@@ -97,7 +97,6 @@ def post_to_wordpress(title, content, original_url, image_url, media_id=None, st
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
 
-    # Embed title, image at the top and prevent oEmbed for the link
     full_content = f'''
 <h1>{title}</h1>
 
@@ -152,6 +151,12 @@ def main():
     translated_news = []
 
     for idx, news in enumerate(fetched_news[:20]):
+        source = news.get("source", "")
+
+        if source != "Cointelegraph.com News":
+            print(f"[SKIP] Source is '{source}'. Only processing Cointelegraph.com News.")
+            continue
+
         print(f"\nProcessing news {idx + 1} of {min(20, len(fetched_news))}")
 
         original_url = news.get("link") or ""
@@ -179,6 +184,7 @@ def main():
             "content": content,
             "image": image_url,
             "url": original_url,
+            "source": source,
             "timestamp": news.get("time", datetime.now().isoformat()),
             "status": "Posted" if post_success else "Failed"
         })
