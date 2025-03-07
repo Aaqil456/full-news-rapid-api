@@ -174,19 +174,24 @@ def main():
             print(f"[SKIP] No original URL found. Skipping this news.")
             continue
 
-        title = translate_text_gemini(news.get("title") or "")
-        description = translate_text_gemini(news.get("summary") or "")
-        content = translate_text_gemini(news.get("content") or "")
+        max_retries = 3
+        for attempt in range(max_retries):
+            title = translate_text_gemini(news.get("title") or "")
+            content = translate_text_gemini(news.get("content") or "")
 
-        if title == "Translation failed" or content == "Translation failed":
-            print(f"[SKIP] Translation failed for '{news.get('title', 'Untitled')}'. Skipping this news.")
+            if title != "Translation failed" and content != "Translation failed":
+                break
+            print(f"[Retry {attempt + 1}] Translation failed for '{news.get('title', 'Untitled')}'. Retrying...")
+            time.sleep(2)
+        else:
+            print(f"[SKIP] Failed to translate title or content of '{news.get('title', 'Untitled')}' after {max_retries} attempts.")
             continue
+
+        description = translate_text_gemini(news.get("summary") or "")
 
         media_id, uploaded_image_url = upload_image_to_wordpress(image_url)
 
-        image_in_post_url = uploaded_image_url if uploaded_image_url else None
-
-        post_success = post_to_wordpress(title, content, original_url, image_in_post_url, media_id)
+        post_success = post_to_wordpress(title, content, original_url, uploaded_image_url, media_id)
 
         translated_news.append({
             "title": title,
