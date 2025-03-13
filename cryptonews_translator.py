@@ -4,7 +4,10 @@ import json
 import time
 import base64
 from datetime import datetime
+from langdetect import detect, DetectorFactory
 
+# Ensure consistent language detection results
+DetectorFactory.seed = 0  
 
 # Environment Variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -45,6 +48,18 @@ def translate_text_gemini(text):
     return "Translation failed"
 
 
+def is_malay_text(text):
+    """Use AI-based language detection to verify if the content is in Malay."""
+    if not text or not isinstance(text, str) or len(text) < 20:
+        return False  # Skip empty or too short content
+    
+    try:
+        detected_lang = detect(text)
+        return detected_lang == "ms"  # ✅ Only return True if detected as Malay
+    except:
+        return False  # ❌ If detection fails, assume it's not Malay
+
+
 def fetch_news_from_apify():
     url = f"https://api.apify.com/v2/acts/buseta~crypto-news/run-sync-get-dataset-items?token={APIFY_API_TOKEN}"
     try:
@@ -61,20 +76,17 @@ def fetch_news_from_apify():
 
 def upload_image_to_wordpress(image_url):
     if not image_url:
-        print("[SKIP] No image URL provided.")
         return None, None
 
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         }
         response = requests.get(image_url, headers=headers)
         if response.status_code != 200:
-            print(f"[Image Download Error] {response.status_code}: Unable to fetch image.")
             return None, None
         image_data = response.content
-    except Exception as e:
-        print(f"[Image Download Exception] {e}")
+    except:
         return None, None
 
     media_endpoint = f"{WP_URL}/media"
@@ -91,16 +103,11 @@ def upload_image_to_wordpress(image_url):
     response = requests.post(media_endpoint, headers=headers, data=image_data)
     if response.status_code == 201:
         media_data = response.json()
-        media_id = media_data.get("id")
-        media_url = media_data.get("source_url")
-        print(f"[Image Uploaded] Media ID: {media_id}")
-        return media_id, media_url
-    else:
-        print(f"[Image Upload Error] {response.status_code}: {response.text}")
-        return None, None
+        return media_data.get("id"), media_data.get("source_url")
+    return None, None
 
 
-def post_to_wordpress(title, content, original_url, image_url=None, media_id=None, status="publish"):
+def post_to_wordpress(title, content, original_url, image_url=None, media_id=None):
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
     post_endpoint = f"{WP_URL}/posts"
@@ -120,7 +127,7 @@ def post_to_wordpress(title, content, original_url, image_url=None, media_id=Non
     post_data = {
         "title": title,
         "content": full_content,
-        "status": status,
+        "status": "publish",
         "categories": [NEWS_CATEGORY_ID]
     }
     if media_id:
@@ -132,22 +139,16 @@ def post_to_wordpress(title, content, original_url, image_url=None, media_id=Non
     }
 
     response = requests.post(post_endpoint, headers=headers, json=post_data)
-    if response.status_code == 201:
-        print(f"[Post Created] {title}")
-        return True
-    else:
-        print(f"[Post Error] {response.status_code}: {response.text}")
-        return False
+    return response.status_code == 201
 
 
-def save_to_json(news_list, filename="translated_news.json"):
+def save_to_json(news_list):
     output = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "all_news": news_list
     }
-    with open(filename, "w", encoding="utf-8") as f:
+    with open("translated_news.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=4)
-    print(f"[JSON Saved] {filename}")
 
 
 def main():
@@ -162,16 +163,12 @@ def main():
         source = news.get("source", "")
 
         if source != "Cointelegraph.com News":
-            print(f"[SKIP] Source is '{source}'. Only processing Cointelegraph.com News.")
             continue
-
-        print(f"\nProcessing news {idx + 1} of {min(20, len(fetched_news))}")
 
         original_url = news.get("link") or ""
         image_url = news.get("image") or ""
 
         if not original_url:
-            print(f"[SKIP] No original URL found. Skipping this news.")
             continue
 
         max_retries = 3
@@ -179,12 +176,10 @@ def main():
             title = translate_text_gemini(news.get("title") or "")
             content = translate_text_gemini(news.get("content") or "")
 
-            if title != "Translation failed" and content != "Translation failed":
+            if title != "Translation failed" and content != "Translation failed" and is_malay_text(content):
                 break
-            print(f"[Retry {attempt + 1}] Translation failed for '{news.get('title', 'Untitled')}'. Retrying...")
             time.sleep(2)
         else:
-            print(f"[SKIP] Failed to translate title or content of '{news.get('title', 'Untitled')}' after {max_retries} attempts.")
             continue
 
         description = translate_text_gemini(news.get("summary") or "")
