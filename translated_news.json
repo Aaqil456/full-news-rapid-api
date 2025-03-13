@@ -1,4 +1,15 @@
 {
-    "timestamp": "2025-03-12 23:25:44",
-    "all_news": []
+    "timestamp": "2025-03-13 01:55:56",
+    "all_news": [
+        {
+            "title": "Pedagang kripto rugi RM900,000 akibat serangan `sandwich attack` dalam pertukaran stablecoin.",
+            "description": "Translation failed",
+            "content": "## Pedagang Kripto Mangsa Serangan Sandwich, Hilang Hampir 98% Nilai Aset\n\nSeorang pedagang kripto menjadi mangsa serangan sandwich semasa membuat pemindahan stablecoin bernilai $220,764 pada 12 Mac lalu – kehilangan hampir 98% nilainya kepada bot Maximum Extractable Value (MEV).\n\n$220,764 bernilai USD Coin (USDC) ditukar kepada $5,271 Tether (USDT) dalam masa lapan saat apabila bot MEV berjaya melakukan front-running transaksi tersebut, mengaut keuntungan lebih $215,500.\n\nData daripada peneroka blok Ethereum menunjukkan serangan MEV berlaku di bursa terdesentralisasi Uniswap v3’s USDC-USDT liquidity pool, di mana nilai berjumlah $19.8 juta dikunci.\n\nButiran transaksi serangan sandwich. Sumber: Etherscan\n\nBot MEV melakukan front-running transaksi dengan menukar semua kecairan USDC daripada Uniswap v3 USDC-USDT pool dan kemudian meletakkannya semula selepas transaksi dilaksanakan, menurut pengasas The DeFi Report, Michael Nadeau.\n\nPenyerang memberi tip kepada pembina blok Ethereum \"bob-the-builder.eth\" sebanyak $200,000 daripada pertukaran $220,764 dan meraih keuntungan $8,000 sendiri, kata Nadeau.\n\nPenyelidik DeFi \"DeFiac\" meneka pedagang yang sama menggunakan dompet yang berbeza telah menjadi mangsa sejumlah enam serangan sandwich, memetik \"alat dalaman.\" Mereka menunjukkan bahawa semua dana bergerak dari protokol pinjaman dan peminjaman Aave sebelum disimpan di Uniswap.\n\nDua dompet menjadi mangsa serangan sandwich bot MEV pada 12 Mac sekitar jam 9:00 pagi UTC. Alamat dompet Ethereum \"0xDDe…42a6D\" dan \"0x999…1D215\" diserang sandwich sebanyak $138,838 dan $128,003 dalam transaksi yang berlaku tiga hingga empat minit lebih awal.\n\nKedua-dua pengirim transaksi membuat pertukaran yang sama di kolam kecairan Uniswap v3 seperti pedagang yang membuat pemindahan $220,762.\n\nRamai meneka perdagangan itu mungkin cubaan pengubahan wang haram.\n\n\"Jika anda mempunyai dana haram NK, anda boleh membina tx yang sangat boleh dimanipulasi mev, kemudian menghantarnya secara peribadi kepada bot mev dan meminta mereka melakukan arbitraj dalam satu pakej,\" kata pengasas papan pemuka data kripto DefiLlama, 0xngmi.\n\n\"Dengan cara itu anda boleh membasuh semua wang dengan hampir 0 kerugian.\"\n\nWalaupun pada mulanya mengkritik Uniswap, Nadeau kemudian mengakui bahawa transaksi tersebut tidak datang daripada hujung hadapan Uniswap, yang mempunyai perlindungan MEV dan tetapan gelinciran lalai.\n\nNadeau menarik balik kritikan tersebut selepas Ketua Pegawai Eksekutif Uniswap, Hayden Adams dan yang lain menjelaskan perlindungan yang dimiliki Uniswap untuk melawan serangan sandwich.  Sumber: Hayden Adams",
+            "image": "https://teknologiblockchain.com/wp-content/uploads/2025/03/840_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDMvMDE5NThjNGQtNTA0My03YmFhLTgxZTUtNTExMmZhMjhkMTc4.jpg",
+            "url": "https://coinmarketcap.com/community/en/articles/67d22deca66d3977119bfbd6",
+            "source": "Cointelegraph.com News",
+            "timestamp": "2025-03-13 00:54:00",
+            "status": "Posted"
+        }
+    ]
 }
