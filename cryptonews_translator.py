@@ -176,7 +176,8 @@ def main():
             title = translate_text_gemini(news.get("title") or "")
             content = translate_text_gemini(news.get("content") or "")
 
-            if title != "Translation failed" and content != "Translation failed" and is_malay_text(content):
+            #and is_malay_text(content)
+            if title != "Translation failed" and content != "Translation failed":
                 break
             time.sleep(2)
         else:
