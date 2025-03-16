@@ -1,15 +1,4 @@
 {
-    "timestamp": "2025-03-16 20:26:34",
-    "all_news": [
-        {
-            "title": "Membakar BTC yang rentan terhadap serangan kuantum adalah pilihan terbaik — Jameson Lopp",
-            "description": "Eksekutif kripto, Jameson Lopp, berhujah bahawa komputer kuantum tidak seharusnya digunakan untuk mendapatkan semula BTC yang hilang. Sebaliknya, duit syiling yang hilang harus dimusnahkan untuk melindungi…",
-            "content": "Jameson Lopp, ketua pegawai keselamatan di syarikat jagaan Bitcoin (BTC) Casa, baru-baru ini membantah cadangan membenarkan pemulihan kuantum BTC yang hilang dan menyatakan bahawa membakar duit syiling ini untuk melindungi integriti protokol adalah pilihan yang lebih baik.\n\nMenurut Lopp, membenarkan individu atau institusi dengan komputer kuantum untuk memulihkan duit syiling yang hilang melanggar ciri-ciri rangkaian Bitcoin iaitu rintangan penapisan, kekekalan transaksi, dan ketekalan.\n\nDalam artikel bertarikh 16 Mac, eksekutif kripto ini menulis bahawa membenarkan pemulihan kuantum tidak memberi manfaat kepada sesiapa. Lopp menambah:  \"Sukar untuk melihat sebarang kebaikan dalam senario itu,\" kata eksekutif itu sebelum menyimpulkan bahawa pemulihan kuantum hanya akan merosakkan keselamatan rangkaian Bitcoin.\n\nAncaman yang ditimbulkan oleh komputer kuantum terhadap Bitcoin terus menjadi perdebatan hangat, dengan sesetengah pihak berpendapat bahawa ancaman kepada penyulitan moden masih berdekad lagi, yang lain berpendapat bahawa komputer kuantum tidak akan pernah praktikal, dan ada yang memberi amaran bahawa ancaman itu sudah menjelma.\n\nJameson Lopp membincangkan risiko yang ditimbulkan oleh komputer kuantum di Persidangan Masa Depan Bitcoin pada tahun 2024.\n\nPada Oktober 2024, penyelidik di Universiti Shanghai mendakwa mereka telah memecah piawaian penyulitan yang digunakan dalam aplikasi ketenteraan dan perbankan menggunakan komputer kuantum.  Bagaimanapun, YouTuber \"Mental Outlaw\" kemudiannya menegaskan bahawa dakwaan ini adalah keterlaluan dan penyelidik tersebut tidak memecah piawaian penyulitan moden.  YouTuber itu berkata komputer kuantum yang digunakan oleh pasukan penyelidikan hanya boleh memfaktorkan integer 2,269,753, yang mencipta rekod baharu untuk komputer kuantum tetapi masih ketinggalan berbanding beberapa komputer klasik.  Mental Outlaw menambah bahawa peranti yang digunakan dalam eksperimen itu hanya boleh memecah kunci 22-bit, manakala rekod yang dicipta oleh komputer klasik ialah memecah kunci 892-bit.  Saiz kunci penyulitan moden boleh berkisar antara 2048 hingga 4096 bit, dengan pilihan untuk melanjutkan saiz kunci pada masa hadapan untuk menjadikannya lebih selamat.",
-            "image": "https://teknologiblockchain.com/wp-content/uploads/2025/03/840_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjQtMTIvMDE5M2FmNjgtMzQ5NC03OTEyLTk3NDktMjEwZmE4MWYxYWJh.jpg",
-            "url": "https://coinmarketcap.com/community/en/articles/67d72b45524266260fdfc4d3",
-            "source": "Cointelegraph.com News",
-            "timestamp": "2025-03-16 19:48:00",
-            "status": "Posted"
-        }
-    ]
+    "timestamp": "2025-03-16 21:22:04",
+    "all_news": []
 }
