@@ -1,4 +1,15 @@
 {
-    "timestamp": "2025-03-18 08:34:00",
-    "all_news": []
+    "timestamp": "2025-03-18 09:29:42",
+    "all_news": [
+        {
+            "title": "Hampir semua ETF Bitcoin AS kecuali satu mengalami kerugian pada Mac lalu.",
+            "description": "ETF Bitcoin spot di AS mencatatkan aliran keluar bersih melebihi $1.3 bilion pada Mac.",
+            "content": "**US Spot Bitcoin ETFs Suffer Massive Outflows in March**\n\nNearly all United States spot Bitcoin exchange-traded funds (ETFs) experienced net negative performance in March, mirroring analysts' predictions of a bearish Bitcoin trend lasting up to 12 months.  Data from Farside Investors reveals that spot Bitcoin ETFs struggled, with net outflows significantly exceeding monthly net inflows.\n\nBlackRock's iShares Bitcoin Trust ETF (IBIT) was hardest hit, recording outflows of $552 million against inflows of only $84.6 million.  Fidelity's Wise Origin Bitcoin Fund (FBTC) fared similarly, with outflows exceeding $517 million and inflows totaling just $136.5 million. Grayscale's Bitcoin Trust ETF (GBTC) also saw substantial outflows of over $200 million, with no inflows whatsoever.  However, Grayscale's Bitcoin Mini Trust ETF (BTC) bucked the trend, achieving over $55 million in net inflows and zero net outflows for March.\n\nIn total, US spot Bitcoin ETFs saw outflows exceeding $1.6 billion during the first seventeen days of March, with inflows reaching only $351 million – resulting in a net outflow of nearly $1.3 billion.\n\n**Ether ETFs Also Experience Negative Performance**\n\nThe situation wasn't much better for Ether-based investment products. BlackRock's iShares Ethereum Trust ETF (ETHA) suffered the most significant outflows, reaching $126 million, without any monthly inflows. Fidelity's Ethereum Fund (FETH) recorded outflows of approximately $73 million, offset by only $21 million in inflows.  While a brief period of $14 million in inflows occurred on March 4th, the remainder of March saw over $300 million in total outflows for spot Ether ETFs.\n\n**Bearish Sentiment Drives ETF Performance**\n\nThe poor performance of crypto exchange-traded products reflects a prevailing bearish sentiment toward Bitcoin and the broader crypto market.  On March 18th, Ki Young Ju, CEO of CryptoQuant, declared the Bitcoin bull cycle over, predicting a year of bearish or sideways price action based on on-chain metrics.  He cited new whales selling at low prices as liquidity dries up.",
+            "image": "https://teknologiblockchain.com/wp-content/uploads/2025/03/840_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDMvMDE5NWE4NTctMDdjZi03YTdkLWEwOWEtZGZjN2MwNTI3ZThh.jpg",
+            "url": "https://coinmarketcap.com/community/en/articles/67d93971ec49bf564ec57f4f",
+            "source": "Cointelegraph.com News",
+            "timestamp": "2025-03-18 09:10:00",
+            "status": "Posted"
+        }
+    ]
 }
