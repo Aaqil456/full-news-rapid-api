@@ -1,4 +1,15 @@
 {
-    "timestamp": "2025-03-18 05:25:55",
-    "all_news": []
+    "timestamp": "2025-03-18 06:36:04",
+    "all_news": [
+        {
+            "title": "Microsoft memberi amaran tentang trojan akses jauh baharu yang menyasarkan dompet kripto.",
+            "description": "Microsoft telah memberi amaran mengenai satu jenis trojan akses jauh baharu yang menyasarkan kripto yang disimpan dalam sambungan dompet untuk pelayar Google Chrome.",
+            "content": "Gergasi teknologi Microsoft telah menemui trojan akses jauh (RAT) baharu yang menyasarkan kripto yang disimpan dalam 20 sambungan dompet kripto untuk pelayar Google Chrome.\n\nPasukan Respons Insiden Microsoft menyatakan dalam catatan blog pada 17 Mac bahawa mereka mula menemui malware StilachiRAT pada November lalu dan mendapati ia boleh mencuri maklumat seperti kelayakan yang disimpan dalam pelayar, maklumat dompet digital dan data yang disimpan dalam papan klip.\n\nSelepas penggunaan, pelaku jahat boleh menggunakan StilachiRAT untuk menyedut data dompet kripto dengan mengimbas maklumat konfigurasi untuk 20 sambungan dompet kripto, termasuk Coinbase Wallet, Trust Wallet, MetaMask dan OKX Wallet.\n\nMalware StilachiRAT boleh menyasarkan kripto yang disimpan dalam 20 sambungan dompet berbeza. Sumber: Microsoft\n\n\"Analisis modul WWStartupCtrl64.dll StilachiRAT yang mengandungi keupayaan RAT mendedahkan penggunaan pelbagai kaedah untuk mencuri maklumat daripada sistem sasaran,\" kata Microsoft.\n\nAntara keupayaan lain, malware itu boleh mengekstrak kelayakan yang disimpan dalam fail keadaan setempat Google Chrome dan memantau aktiviti papan klip untuk maklumat sensitif seperti kata laluan dan kunci kripto.\n\nIa juga boleh menggunakan ciri-ciri mengelak pengesanan dan anti-forensik, seperti keupayaan untuk membersihkan log peristiwa dan memeriksa tanda-tanda ia berjalan dalam kotak pasir untuk menyekat percubaan analisis, menurut Microsoft.\n\nBuat masa ini, gergasi teknologi itu berkata ia tidak dapat menentukan siapa yang berada di belakang malware tersebut tetapi berharap perkongsian maklumat secara terbuka akan mengurangkan bilangan orang yang mungkin terperangkap.\n\n\"Berdasarkan keterlihatan semasa Microsoft, malware ini tidak menunjukkan pengedaran meluas pada masa ini,\" kata Microsoft.\n\nMicrosoft mencadangkan untuk mengelakkan menjadi mangsa malware; pengguna perlu mempunyai perisian antivirus, komponen anti-phishing dan anti-malware berasaskan awan pada peranti mereka.\n\nKehilangan akibat penipuan, eksploitasi dan penggodaman kripto berjumlah hampir $1.53 bilion pada bulan Februari, dengan penggodaman Bybit sebanyak $1.4 bilion menyumbang sebahagian besar kerugian, menurut firma keselamatan blockchain CertiK.\n\nFirma analitik blockchain Chainalysis menyatakan dalam Laporan Jenayah Kripto 2025 bahawa jenayah kripto telah memasuki era profesional yang dikuasai oleh penipuan berasaskan AI, pengubahan wang haram stablecoin, dan sindiket siber yang cekap, dengan tahun lepas menyaksikan volum transaksi haram sebanyak $51 bilion.",
+            "image": "https://teknologiblockchain.com/wp-content/uploads/2025/03/840_aHR0cHM6Ly9zMy5jb2ludGVsZWdyYXBoLmNvbS91cGxvYWRzLzIwMjUtMDMvMDE5NWE3NDAtMzY2Ny03YzU1LWFhZGQtYmU2YjFjZmY0ZDNl.jpg",
+            "url": "https://coinmarketcap.com/community/en/articles/67d90e140cabb54ef18be7ea",
+            "source": "Cointelegraph.com News",
+            "timestamp": "2025-03-18 06:05:00",
+            "status": "Posted"
+        }
+    ]
 }
