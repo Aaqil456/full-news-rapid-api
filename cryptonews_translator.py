@@ -58,7 +58,7 @@ Do not use emojis unless they appear in the original text.
 Do not translate brand names or product names.  
 Do not phrase the summary as if it is referring to a news source — write it as a general insight or observation instead.  
 ⚠️ Do NOT include phrases like "Terjemahan:", "Kesimpulan:", "Baiklah,", "Secara ringkas", "**Conclusion:**", "**Translation:**", or anything similar. Just give the final sentence.
- 
+
 Original news:
 '{text}'
 """
@@ -82,53 +82,73 @@ def fetch_news():
     return []
 
 
-# === WORDPRESS ===
+# === FIXED IMAGE UPLOAD ===
 def upload_image_to_wp(image_url):
     if not image_url:
         return None, None
+
     try:
-        response = requests.get(image_url)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        response = requests.get(image_url, headers=headers)
         if response.status_code != 200:
             return None, None
         image_data = response.content
-        credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
-        token = base64.b64encode(credentials.encode()).decode()
-        headers = {
-            "Authorization": f"Basic {token}",
-            "Content-Disposition": f"attachment; filename={image_url.split('/')[-1]}",
-            "Content-Type": "image/jpeg"
-        }
-        upload_response = requests.post(f"{WP_URL}/media", headers=headers, data=image_data)
-        if upload_response.status_code == 201:
-            media = upload_response.json()
-            return media.get("id"), media.get("source_url")
-    except Exception as e:
-        print(f"[Upload Error] {e}")
+    except:
+        return None, None
+
+    media_endpoint = f"{WP_URL}/media"
+    credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
+    token = base64.b64encode(credentials.encode()).decode()
+
+    file_name = image_url.split("/")[-1]
+    headers = {
+        "Authorization": f"Basic {token}",
+        "Content-Disposition": f"attachment; filename={file_name}",
+        "Content-Type": "image/jpeg",
+    }
+
+    response = requests.post(media_endpoint, headers=headers, data=image_data)
+    if response.status_code == 201:
+        media_data = response.json()
+        return media_data.get("id"), media_data.get("source_url")
     return None, None
 
 
+# === POST TO WORDPRESS ===
 def post_to_wp(title, content, original_url, image_url=None, media_id=None):
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
     headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json"}
+
+    image_html = f"<img src='{image_url}' alt='{title}'/><br>" if image_url else ""
+    full_content = f"<h1>{title}</h1><br>{image_html}{content}<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>"
+
     post_data = {
         "title": title,
-        "content": f"<h1>{title}</h1><br><img src='{image_url}' alt='{title}'/><br>{content}<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>",
+        "content": full_content,
         "status": "publish",
         "categories": [NEWS_CATEGORY_ID]
     }
+
     if media_id:
         post_data["featured_media"] = media_id
+        time.sleep(2)
 
     try:
         response = requests.post(f"{WP_URL}/posts", headers=headers, json=post_data)
-        return response.status_code == 201
+        if response.status_code == 201:
+            print(f"[Post Created] {title}")
+            return True
+        else:
+            print(f"[Post Error] {response.status_code}: {response.text}")
     except Exception as e:
-        print(f"[Post Error] {e}")
+        print(f"[Post WP Error] {e}")
     return False
 
 
-# === FACEBOOK ===
+# === POST TO FACEBOOK ===
 def post_to_facebook(image_url, caption):
     if not FB_PAGE_ACCESS_TOKEN or not FB_PAGE_ID or not image_url:
         print("[SKIP FB] Missing config or image.")
@@ -190,7 +210,7 @@ def main():
         media_id, uploaded_image_url = None, None
 
         if source == "Cointelegraph.com News":
-            for _ in range(3):  # Retry 3x
+            for _ in range(3):
                 wp_title = translate_for_wordpress(title_raw)
                 wp_content = translate_for_wordpress(content_raw)
                 wp_summary = translate_for_wordpress(summary_raw)
@@ -201,7 +221,6 @@ def main():
             media_id, uploaded_image_url = upload_image_to_wp(image_url)
             wp_status = "Posted" if post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id) else "Failed"
 
-        # === Save
         all_results.append({
             "title": title_raw,
             "translated_facebook_post": fb_caption,
@@ -218,8 +237,20 @@ def main():
 
         time.sleep(1)
 
+    # === Save JSON ===
     save_to_json(all_results)
-    print(f"\n✅ Done! {len(all_results)} items saved to translated_news.json")
+
+    # === Summary Stats ===
+    fb_success = sum(1 for item in all_results if item["fb_status"] == "Posted")
+    wp_success = sum(1 for item in all_results if item["wp_status"] == "Posted")
+    fb_failed = sum(1 for item in all_results if item["fb_status"] == "Failed")
+    wp_failed = sum(1 for item in all_results if item["wp_status"] == "Failed")
+
+    print(f"\n✅ Done! {len(all_results)} items processed.")
+    print(f"📱 Facebook posts uploaded: {fb_success}")
+    print(f"🌐 WordPress posts uploaded: {wp_success}")
+    print(f"❌ Facebook failed: {fb_failed}")
+    print(f"❌ WordPress failed: {wp_failed}")
 
 
 if __name__ == "__main__":
