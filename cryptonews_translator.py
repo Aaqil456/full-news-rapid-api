@@ -153,17 +153,24 @@ def post_to_facebook(image_url, caption):
     if not FB_PAGE_ACCESS_TOKEN or not FB_PAGE_ID or not image_url:
         print("[SKIP FB] Missing config or image.")
         return False
+
     data = {
         "url": image_url,
         "message": caption,
         "access_token": FB_PAGE_ACCESS_TOKEN
     }
+
     try:
         response = requests.post(f"https://graph.facebook.com/{FB_PAGE_ID}/photos", data=data)
-        return response.status_code == 200
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"[FB ERROR] {response.status_code} - {response.text}")
+            return False
     except Exception as e:
-        print(f"[FB Post Error] {e}")
-    return False
+        print(f"[FB Post Exception] {e}")
+        return False
+
 
 
 # === SAVE JSON ===
