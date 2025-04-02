@@ -82,15 +82,12 @@ def fetch_news():
     return []
 
 
-# === FIXED IMAGE UPLOAD ===
+# === IMAGE UPLOAD TO WORDPRESS ===
 def upload_image_to_wp(image_url):
     if not image_url:
         return None, None
-
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
         response = requests.get(image_url, headers=headers)
         if response.status_code != 200:
             return None, None
@@ -117,12 +114,12 @@ def upload_image_to_wp(image_url):
 
 
 # === POST TO WORDPRESS ===
-def post_to_wp(title, content, original_url, image_url=None, media_id=None):
+def post_to_wp(title, content, original_url, uploaded_image_url=None, media_id=None):
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
     headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json"}
 
-    image_html = f"<img src='{image_url}' alt='{title}'/><br>" if image_url else ""
+    image_html = f"<img src='{uploaded_image_url}' alt='{title}'/><br>" if uploaded_image_url else ""
     full_content = f"<h1>{title}</h1><br>{image_html}{content}<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>"
 
     post_data = {
@@ -150,18 +147,26 @@ def post_to_wp(title, content, original_url, image_url=None, media_id=None):
 
 # === POST TO FACEBOOK ===
 def post_to_facebook(image_url, caption):
-    if not FB_PAGE_ACCESS_TOKEN or not FB_PAGE_ID or not image_url:
-        print("[SKIP FB] Missing config or image.")
+    if not FB_PAGE_ACCESS_TOKEN or not FB_PAGE_ID:
+        print("[SKIP FB] Missing config.")
         return False
 
-    data = {
-        "url": image_url,
-        "message": caption,
-        "access_token": FB_PAGE_ACCESS_TOKEN
-    }
-
     try:
-        response = requests.post(f"https://graph.facebook.com/{FB_PAGE_ID}/photos", data=data)
+        if image_url:
+            data = {
+                "url": image_url,
+                "message": caption,
+                "access_token": FB_PAGE_ACCESS_TOKEN
+            }
+            endpoint = f"https://graph.facebook.com/{FB_PAGE_ID}/photos"
+        else:
+            data = {
+                "message": caption,
+                "access_token": FB_PAGE_ACCESS_TOKEN
+            }
+            endpoint = f"https://graph.facebook.com/{FB_PAGE_ID}/feed"
+
+        response = requests.post(endpoint, data=data)
         if response.status_code == 200:
             return True
         else:
@@ -170,7 +175,6 @@ def post_to_facebook(image_url, caption):
     except Exception as e:
         print(f"[FB Post Exception] {e}")
         return False
-
 
 
 # === SAVE JSON ===
@@ -182,7 +186,7 @@ def save_to_json(data):
         }, f, ensure_ascii=False, indent=4)
 
 
-# === MAIN ===
+# === MAIN FUNCTION ===
 def main():
     fetched_news = fetch_news()
     if not fetched_news:
@@ -202,16 +206,14 @@ def main():
         image_url = news.get("image", "")
         timestamp = news.get("time", datetime.now().isoformat())
 
-        # === Facebook Translation ===
+        # === Facebook ===
         full_text = f"{title_raw}\n\n{summary_raw}\n\n{content_raw}"
         fb_caption = translate_for_facebook(full_text)
-
-        # === Facebook Post ===
         fb_status = "Skipped"
-        if image_url and fb_caption != "Translation failed":
+        if fb_caption != "Translation failed":
             fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
 
-        # === WordPress Translation ===
+        # === WordPress ===
         wp_title, wp_content, wp_summary = "", "", ""
         wp_status = "Skipped"
         media_id, uploaded_image_url = None, None
@@ -247,7 +249,7 @@ def main():
     # === Save JSON ===
     save_to_json(all_results)
 
-    # === Summary Stats ===
+    # === Summary Counts ===
     fb_success = sum(1 for item in all_results if item["fb_status"] == "Posted")
     wp_success = sum(1 for item in all_results if item["wp_status"] == "Posted")
     fb_failed = sum(1 for item in all_results if item["fb_status"] == "Failed")
