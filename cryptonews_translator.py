@@ -85,32 +85,48 @@ def fetch_news():
 # === IMAGE UPLOAD TO WORDPRESS ===
 def upload_image_to_wp(image_url):
     if not image_url:
-        return None, None
-    try:
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-        response = requests.get(image_url, headers=headers)
-        if response.status_code != 200:
-            return None, None
-        image_data = response.content
-    except:
+        print("[Upload Skipped] No image URL.")
         return None, None
 
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        img_response = requests.get(image_url, headers=headers)
+        if img_response.status_code != 200:
+            print(f"[Download Error] Status {img_response.status_code} for image: {image_url}")
+            return None, None
+        image_data = img_response.content
+    except Exception as e:
+        print(f"[Exception] Failed to download image: {e}")
+        return None, None
+
+    # Setup media endpoint
     media_endpoint = f"{WP_URL}/media"
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
 
-    file_name = image_url.split("/")[-1]
+    file_name = image_url.split("/")[-1] or "image.jpg"
     headers = {
         "Authorization": f"Basic {token}",
         "Content-Disposition": f"attachment; filename={file_name}",
         "Content-Type": "image/jpeg",
     }
 
-    response = requests.post(media_endpoint, headers=headers, data=image_data)
-    if response.status_code == 201:
-        media_data = response.json()
-        return media_data.get("id"), media_data.get("source_url")
+    try:
+        print(f"[Uploading] {file_name} to WP Media...")
+        upload_response = requests.post(media_endpoint, headers=headers, data=image_data)
+        if upload_response.status_code == 201:
+            media_data = upload_response.json()
+            print(f"[Success] Uploaded to WP. Media ID: {media_data.get('id')}")
+            return media_data.get("id"), media_data.get("source_url")
+        else:
+            print(f"[Upload Error] Status {upload_response.status_code}: {upload_response.text}")
+    except Exception as e:
+        print(f"[Upload Exception] {e}")
+
     return None, None
+
 
 
 # === POST TO WORDPRESS ===
