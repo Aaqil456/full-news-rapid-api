@@ -90,7 +90,9 @@ def upload_image_to_wp(image_url):
 
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+            "Referer": "https://cointelegraph.com"  # Help bypass hotlinking blocks
         }
         img_response = requests.get(image_url, headers=headers)
         if img_response.status_code != 200:
@@ -98,19 +100,20 @@ def upload_image_to_wp(image_url):
             return None, None
         image_data = img_response.content
     except Exception as e:
-        print(f"[Exception] Failed to download image: {e}")
+        print(f"[Download Exception] {e}")
         return None, None
 
-    # Setup media endpoint
+    # Setup WordPress credentials
     media_endpoint = f"{WP_URL}/media"
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
 
+    # Filename from URL
     file_name = image_url.split("/")[-1] or "image.jpg"
     headers = {
         "Authorization": f"Basic {token}",
         "Content-Disposition": f"attachment; filename={file_name}",
-        "Content-Type": "image/jpeg",
+        "Content-Type": "image/jpeg",  # You can dynamically detect MIME type later if needed
     }
 
     try:
@@ -118,7 +121,7 @@ def upload_image_to_wp(image_url):
         upload_response = requests.post(media_endpoint, headers=headers, data=image_data)
         if upload_response.status_code == 201:
             media_data = upload_response.json()
-            print(f"[Success] Uploaded to WP. Media ID: {media_data.get('id')}")
+            print(f"[Upload Success] Media ID: {media_data.get('id')}")
             return media_data.get("id"), media_data.get("source_url")
         else:
             print(f"[Upload Error] Status {upload_response.status_code}: {upload_response.text}")
