@@ -165,7 +165,57 @@ def post_to_wp(title, content, original_url, uploaded_image_url=None, media_id=N
 
 
 # === POST TO FACEBOOK ===
+
+# === DYNAMIC PAGE TOKEN HANDLER ===
+def get_fresh_page_token():
+    long_lived_user_token = os.getenv("LONG_LIVED_USER_TOKEN")
+    if not long_lived_user_token:
+        print("[FB] Missing LONG_LIVED_USER_TOKEN")
+        return None
+
+    try:
+        response = requests.get(
+            f"https://graph.facebook.com/v22.0/me/accounts?access_token={long_lived_user_token}"
+        )
+        data = response.json()
+        if "data" in data and data["data"]:
+            return data["data"][0]["access_token"]
+        else:
+            print("[FB] No pages found or invalid token.")
+    except Exception as e:
+        print(f"[FB] Error fetching page token: {e}")
+    return None
+
 def post_to_facebook(image_url, caption):
+    page_token = get_fresh_page_token()
+    if not page_token or not FB_PAGE_ID:
+        print("[SKIP FB] Missing page token or page ID.")
+        return False
+
+    try:
+        if image_url:
+            data = {
+                "url": image_url,
+                "message": caption,
+                "access_token": page_token
+            }
+            endpoint = f"https://graph.facebook.com/{FB_PAGE_ID}/photos"
+        else:
+            data = {
+                "message": caption,
+                "access_token": page_token
+            }
+            endpoint = f"https://graph.facebook.com/{FB_PAGE_ID}/feed"
+
+        response = requests.post(endpoint, data=data)
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"[FB ERROR] {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"[FB Post Exception] {e}")
+        return False
     if not FB_PAGE_ACCESS_TOKEN or not FB_PAGE_ID:
         print("[SKIP FB] Missing config.")
         return False
