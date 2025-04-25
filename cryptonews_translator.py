@@ -254,8 +254,24 @@ def save_to_json(data):
             "all_news": data
         }, f, ensure_ascii=False, indent=4)
 
-
 # === MAIN FUNCTION ===
+ALLOWED_FB_SOURCES = [
+    "CoinsProbe",
+    "Crypto Economy",
+    "VoiceOfCrypto (VOC)",
+    "Beldex",
+    "DroomDroom",
+    "Freecoins24",
+    "BlockchainReporter",
+    "Thecryptoupdates",
+    "Coin_Gabbar",
+    "SuperEx",
+    "Tiger Research",
+    "The Crypto Times",
+    "CoinPedia News",
+    "Cointelegraph.com News"
+]
+
 def main():
     fetched_news = fetch_news()
     if not fetched_news:
@@ -276,13 +292,15 @@ def main():
         timestamp = news.get("time", datetime.now().isoformat())
 
         # === Facebook ===
-        full_text = f"{title_raw}\n\n{summary_raw}\n\n{content_raw}"
-        fb_caption = translate_for_facebook(full_text)
+        fb_caption = "Skipped"
         fb_status = "Skipped"
-        if fb_caption != "Translation failed":
-            fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
+        if source in ALLOWED_FB_SOURCES:
+            full_text = f"{title_raw}\n\n{summary_raw}\n\n{content_raw}"
+            fb_caption = translate_for_facebook(full_text)
+            if fb_caption != "Translation failed":
+                fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
 
-        # === WordPress ===
+        # === WordPress === (unchanged)
         wp_title, wp_content, wp_summary = "", "", ""
         wp_status = "Skipped"
         media_id, uploaded_image_url = None, None
