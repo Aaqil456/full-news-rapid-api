@@ -141,12 +141,28 @@ Original news:
 
 def translate_for_wordpress(text):
     prompt = f"""
-        Translate this text '{text}' into Malay.
-        Only return the translated text, structured like an article.
-        Please exclude or don't take any sentences that look like an advertisement from the text.
+        Translate the following article into Bahasa Melayu.
+        
+        ⚠️ Important instructions:
+        - Do not add source credits like "tajuk asal..." or "muncul di..."
+        - Do not include opening phrases like "Berikut adalah..."
+        - Do not mention where the article was published.
+        - Only return the clean translated article content, nothing more.
+        - Maintain proper paragraph formatting.
+        
+        {text}
         """
     return query_gemini(prompt)
 
+
+def translate_title(text):
+    prompt = f"""
+        Translate this **headline only** into Bahasa Melayu.
+        Return only the translated headline, without explanation or formatting.
+        
+        {text}
+        """
+    return query_gemini(prompt)
 
 
 
@@ -335,18 +351,30 @@ def update_response_json(new_items):
     except:
         existing = []
 
-    posted_links = {item.get("link") for item in existing}
+    posted_links = {item.get("original_url") or item.get("link") for item in existing}
+
     combined = existing + [
-        {"title": item["title"], "link": item["original_url"]}
+        {
+            "title": item["title"],
+            "translated_title": item["translated_title"],
+            "translated_summary": item["translated_summary"],
+            "translated_content": item["translated_content"],
+            "translated_facebook_post": item["translated_facebook_post"],
+            "original_url": item["original_url"],
+            "image": item["image"],
+            "source": item["source"],
+            "fb_status": item["fb_status"],
+            "wp_status": item["wp_status"],
+            "timestamp": item["timestamp"]
+        }
         for item in new_items
-        if item.get("original_url") 
+        if item.get("original_url")
            and item.get("original_url") not in posted_links
            and (item.get("fb_status") == "Posted" or item.get("wp_status") == "Posted")
     ]
 
     with open("response.json", "w", encoding="utf-8") as f:
         json.dump(combined, f, ensure_ascii=False, indent=4)
-
 
 
 
@@ -386,7 +414,7 @@ def main():
 
         if source in ALLOWED_NEWS_DOMAINS:
             for _ in range(3):
-                wp_title = translate_for_wordpress(title_raw)
+                wp_title = translate_title(title_raw)
                 wp_content = translate_for_wordpress(content_raw)
                 wp_summary = translate_for_wordpress(summary_raw)
                 if wp_title != "Translation failed" and wp_content != "Translation failed":
