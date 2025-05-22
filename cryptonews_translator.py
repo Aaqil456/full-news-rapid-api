@@ -16,6 +16,7 @@ FB_PAGE_ACCESS_TOKEN = os.getenv("FB_PAGE_ACCESS_TOKEN")
 FB_PAGE_ID = os.getenv("FB_PAGE_ID")
 
 NEWS_CATEGORY_ID = 1413  # WordPress category
+
 ALLOWED_NEWS_DOMAINS = [
     "coindesk.com",
     "cointelegraph.com",
@@ -137,11 +138,13 @@ Original news:
 
 
 def translate_for_wordpress(text):
-    prompt = f"Translate this text '{text}' into Malay. 
-    Only return the translated text, structured like an article. 
-    Please exclude or don't take any sentences that looks like an advertisement from the text"
-    
+    prompt = f"""
+        Translate this text '{text}' into Malay.
+        Only return the translated text, structured like an article.
+        Please exclude or don't take any sentences that look like an advertisement from the text.
+        """
     return query_gemini(prompt)
+
 
 
 
