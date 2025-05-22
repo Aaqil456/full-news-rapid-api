@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 # === ENV VARIABLES ===
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-APIFY_API_TOKEN = os.getenv("APIFY_API_TOKEN")
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 WP_URL = os.getenv("WP_URL", "https://teknologiblockchain.com/wp-json/wp/v2")
 WP_USER = os.getenv("WP_USER")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
@@ -32,61 +32,6 @@ ALLOWED_FB_SOURCES = [
     "decrypt.co",
     "cryptodaily.co.uk"
 ]
-
-
-
-# === GEMINI TRANSLATION HELPERS ===
-def query_gemini(prompt):
-    if not prompt or not isinstance(prompt, str):
-        return "Translation failed"
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-    headers = {"Content-Type": "application/json"}
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-
-    for attempt in range(5):
-        try:
-            response = requests.post(url, headers=headers, json=payload)
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
-            elif response.status_code == 429:
-                print(f"[Rate Limit] Retry {attempt+1}...")
-                time.sleep(2 ** attempt)
-            else:
-                print(f"[Gemini Error] {response.status_code}: {response.text}")
-                break
-        except Exception as e:
-            print(f"[Gemini Exception] {e}")
-            break
-    return "Translation failed"
-
-
-def translate_for_facebook(text):
-    prompt = f"""
-Translate the following news into Malay.  
-Then, kindly write a short conclusion or summary of the news in less than 280 characters in 1 paragraph.  
-Only return the short conclusion without any explanation, heading, or intro phrase.  
-Use natural, conversational, friendly Malaysian Malay — like how a friend shares info.  
-Keep it simple, relaxed, and easy to understand.  
-Avoid using exaggerated slang words or interjections (such as "Eh," "Korang," "Woi," "Wooohooo," "Wooo," or anything similar).  
-No shouting words or unnecessary excitement.  
-Keep it informative, approachable, and casual — but clean and neutral.  
-Do not use emojis unless they appear in the original text.  
-Do not translate brand names or product names.  
-Do not phrase the summary as if it is referring to a news source — write it as a general insight or observation instead.  
-⚠️ Do NOT include phrases like "Terjemahan:", "Kesimpulan:", "Baiklah,", "Secara ringkas", "**Conclusion:**", "**Translation:**", or anything similar. Just give the final sentence.
-
-Original news:
-'{text}'
-"""
-    return query_gemini(prompt)
-
-
-def translate_for_wordpress(text):
-    prompt = f"Translate this text '{text}' into Malay. Only return the translated text, structured like an article. Please exclude or don't take any sentences that looks like an advertisement from the text"
-    return query_gemini(prompt)
-
 
 # === FETCH NEWS ===
 def extract_domain(link):
@@ -142,6 +87,64 @@ def fetch_news():
     except Exception as e:
         print(f"[RapidAPI Exception] {e}")
         return []
+
+# === GEMINI TRANSLATION HELPERS ===
+def query_gemini(prompt):
+    if not prompt or not isinstance(prompt, str):
+        return "Translation failed"
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    headers = {"Content-Type": "application/json"}
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+
+    for attempt in range(5):
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+            elif response.status_code == 429:
+                print(f"[Rate Limit] Retry {attempt+1}...")
+                time.sleep(2 ** attempt)
+            else:
+                print(f"[Gemini Error] {response.status_code}: {response.text}")
+                break
+        except Exception as e:
+            print(f"[Gemini Exception] {e}")
+            break
+    return "Translation failed"
+
+
+def translate_for_facebook(text):
+    prompt = f"""
+Translate the following news into Malay.  
+Then, kindly write a short conclusion or summary of the news in less than 280 characters in 1 paragraph.  
+Only return the short conclusion without any explanation, heading, or intro phrase.  
+Use natural, conversational, friendly Malaysian Malay — like how a friend shares info.  
+Keep it simple, relaxed, and easy to understand.  
+Avoid using exaggerated slang words or interjections (such as "Eh," "Korang," "Woi," "Wooohooo," "Wooo," or anything similar).  
+No shouting words or unnecessary excitement.  
+Keep it informative, approachable, and casual — but clean and neutral.  
+Do not use emojis unless they appear in the original text.  
+Do not translate brand names or product names.  
+Do not phrase the summary as if it is referring to a news source — write it as a general insight or observation instead.  
+⚠️ Do NOT include phrases like "Terjemahan:", "Kesimpulan:", "Baiklah,", "Secara ringkas", "**Conclusion:**", "**Translation:**", or anything similar. Just give the final sentence.
+
+Original news:
+'{text}'
+"""
+    return query_gemini(prompt)
+
+
+def translate_for_wordpress(text):
+    prompt = f"Translate this text '{text}' into Malay. 
+    Only return the translated text, structured like an article. 
+    Please exclude or don't take any sentences that looks like an advertisement from the text"
+    
+    return query_gemini(prompt)
+
+
+
 
 
 
@@ -376,7 +379,7 @@ def main():
         wp_status = "Skipped"
         media_id, uploaded_image_url = None, None
 
-        if source == "Cointelegraph.com News":
+        if source in ALLOWED_NEWS_DOMAINS:
             for _ in range(3):
                 wp_title = translate_for_wordpress(title_raw)
                 wp_content = translate_for_wordpress(content_raw)
