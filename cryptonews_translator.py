@@ -4,6 +4,7 @@ import json
 import time
 import base64
 from datetime import datetime
+from urllib.parse import urlparse
 
 # === ENV VARIABLES ===
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -15,13 +16,23 @@ FB_PAGE_ACCESS_TOKEN = os.getenv("FB_PAGE_ACCESS_TOKEN")
 FB_PAGE_ID = os.getenv("FB_PAGE_ID")
 
 NEWS_CATEGORY_ID = 1413  # WordPress category
-ALLOWED_NEWS_SOURCES = [
-    "CoinDesk",
-    "Cointelegraph",
-    "Bitcoinist",
-    "Decrypt",
-    "CryptoDaily"
+ALLOWED_NEWS_DOMAINS = [
+    "coindesk.com",
+    "cointelegraph.com",
+    "bitcoinist.com",
+    "decrypt.co",
+    "cryptodaily.co.uk"
 ]
+
+# === MAIN FUNCTION ===
+ALLOWED_FB_SOURCES = [
+    "coindesk.com",
+    "cointelegraph.com",
+    "bitcoinist.com",
+    "decrypt.co",
+    "cryptodaily.co.uk"
+]
+
 
 
 # === GEMINI TRANSLATION HELPERS ===
@@ -78,15 +89,60 @@ def translate_for_wordpress(text):
 
 
 # === FETCH NEWS ===
-def fetch_news():
-    url = f"https://api.apify.com/v2/acts/buseta~crypto-news/run-sync-get-dataset-items?token={APIFY_API_TOKEN}"
+def extract_domain(link):
     try:
-        response = requests.post(url, timeout=600)
-        if response.status_code == 201:
-            return response.json()
+        netloc = urlparse(link).netloc.lower()
+        return netloc.replace("www.", "")
+    except:
+        return ""
+
+def fetch_news():
+    url = "https://crypto-news51.p.rapidapi.com/api/v1/crypto/articles"
+    querystring = {"page": "1", "limit": "10", "time_frame": "24h", "format": "json"}
+    headers = {
+        "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
+        "x-rapidapi-host": "crypto-news51.p.rapidapi.com"
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=querystring, timeout=10)
+        if response.status_code != 200:
+            print(f"[RapidAPI Error] {response.status_code}: {response.text}")
+            return []
+
+        raw_data = response.json()
+        posted_links = get_already_posted_links()
+        filtered_news = []
+
+        for article in raw_data:
+            link = article.get("link", "")
+            if not link or link in posted_links:
+                continue
+
+            domain = extract_domain(link)
+            if domain not in ALLOWED_NEWS_DOMAINS:
+                print(f"[Filtered] Not allowed domain: {domain}")
+                continue
+
+            image_url = article.get("media", [""])[0] if article.get("media") else ""
+            source = domain  # Use domain as the "source"
+
+            filtered_news.append({
+                "title": article.get("title", ""),
+                "summary": article.get("summary", ""),
+                "content": article.get("summary", ""),  # use summary as content fallback
+                "link": link,
+                "image": image_url,
+                "time": article.get("published", ""),
+                "source": source
+            })
+
+        return filtered_news
+
     except Exception as e:
-        print(f"[Apify Exception] {e}")
-    return []
+        print(f"[RapidAPI Exception] {e}")
+        return []
+
 
 
 # === IMAGE UPLOAD TO WORDPRESS ===
@@ -254,30 +310,38 @@ def post_to_facebook(image_url, caption):
 
 
 # === SAVE JSON ===
-def save_to_json(data):
-    with open("translated_news.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "all_news": data
-        }, f, ensure_ascii=False, indent=4)
 
-# === MAIN FUNCTION ===
-ALLOWED_FB_SOURCES = [
-    "CoinsProbe",
-    "Crypto Economy",
-    "VoiceOfCrypto (VOC)",
-    "Beldex",
-    "DroomDroom",
-    "Freecoins24",
-    "BlockchainReporter",
-    "Thecryptoupdates",
-    "Coin_Gabbar",
-    "SuperEx",
-    "Tiger Research",
-    "The Crypto Times",
-    "CoinPedia News",
-    "Cointelegraph.com News"
-]
+def get_already_posted_links():
+    try:
+        with open("response.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return {item.get("link") for item in data if item.get("link")}
+    except Exception as e:
+        print(f"[JSON Load Error] {e}")
+        return set()
+
+def update_response_json(new_items):
+    try:
+        with open("response.json", "r", encoding="utf-8") as f:
+            existing = json.load(f)
+    except:
+        existing = []
+
+    posted_links = {item.get("link") for item in existing}
+    combined = existing + [
+        {"title": item["title"], "link": item["original_url"]}
+        for item in new_items
+        if item.get("original_url") 
+           and item.get("original_url") not in posted_links
+           and (item.get("fb_status") == "Posted" or item.get("wp_status") == "Posted")
+    ]
+
+    with open("response.json", "w", encoding="utf-8") as f:
+        json.dump(combined, f, ensure_ascii=False, indent=4)
+
+
+
+
 
 def main():
     fetched_news = fetch_news()
@@ -341,7 +405,8 @@ def main():
         time.sleep(1)
 
     # === Save JSON ===
-    save_to_json(all_results)
+    
+    update_response_json(all_results)
 
     # === Summary Counts ===
     fb_success = sum(1 for item in all_results if item["fb_status"] == "Posted")
