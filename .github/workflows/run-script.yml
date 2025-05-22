@@ -2,8 +2,8 @@ name: Run Translation Script and Post to WordPress & Facebook
 
 on:
   workflow_dispatch:
-  #schedule:
-    #- cron: "0 * * * *"  # Run hourly
+  # schedule:
+  #   - cron: "0 * * * *"  # Run hourly if you want automation
 
 permissions:
   contents: write
@@ -28,8 +28,8 @@ jobs:
 
       - name: 🔒 Verify Secrets
         env:
-          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           WP_USER: ${{ secrets.WP_USER }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
@@ -38,7 +38,7 @@ jobs:
           echo "🔎 Checking required secrets..."
           missing=false
 
-          for var in APIFY_API_TOKEN GEMINI_API_KEY WP_USER WP_APP_PASSWORD FB_PAGE_ID LONG_LIVED_USER_TOKEN; do
+          for var in GEMINI_API_KEY RAPIDAPI_KEY WP_USER WP_APP_PASSWORD FB_PAGE_ID LONG_LIVED_USER_TOKEN; do
             if [ -z "${!var}" ]; then
               echo "❌ $var is missing!"
               missing=true
@@ -55,7 +55,7 @@ jobs:
       - name: 🚀 Run Translation and Posting Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           WP_URL: ${{ secrets.WP_URL }}
           WP_USER: ${{ secrets.WP_USER }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
@@ -64,16 +64,16 @@ jobs:
         run: |
           python cryptonews_translator.py
           echo "[DEBUG] JSON Output Preview:"
-          cat translated_news.json || echo "[No translated_news.json found]"
+          cat response.json || echo "[No response.json found]"
 
-      - name: 📤 Commit and Push Translated JSON
+      - name: 📤 Commit and Push Posted JSON
         env:
           ACTIONS_PAT: ${{ secrets.ACTIONS_PAT }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add translated_news.json
+          git add response.json
           git status
-          git diff --cached --quiet || git commit -m "Update translated news"
+          git diff --cached --quiet || git commit -m "Update posted news"
           git pull --rebase https://x-access-token:${{ secrets.ACTIONS_PAT }}@github.com/${{ github.repository }}.git main || echo "✅ No remote changes"
           git push https://x-access-token:${{ secrets.ACTIONS_PAT }}@github.com/${{ github.repository }}.git main || echo "✅ Nothing to push"
