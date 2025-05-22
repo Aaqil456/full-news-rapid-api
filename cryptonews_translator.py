@@ -15,6 +15,13 @@ FB_PAGE_ACCESS_TOKEN = os.getenv("FB_PAGE_ACCESS_TOKEN")
 FB_PAGE_ID = os.getenv("FB_PAGE_ID")
 
 NEWS_CATEGORY_ID = 1413  # WordPress category
+ALLOWED_NEWS_SOURCES = [
+    "CoinDesk",
+    "Cointelegraph",
+    "Bitcoinist",
+    "Decrypt",
+    "CryptoDaily"
+]
 
 
 # === GEMINI TRANSLATION HELPERS ===
