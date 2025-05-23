@@ -71,7 +71,8 @@ def fetch_news():
             if domain not in ALLOWED_NEWS_DOMAINS:
                 print(f"[Filtered] Not allowed domain: {domain}")
                 continue
-
+                
+            sentiment = article.get("sentiment", {}).get("label", "unknown")
             image_url = article.get("media", [""])[0] if article.get("media") else ""
             source = domain  # Use domain as the "source"
 
@@ -82,7 +83,8 @@ def fetch_news():
                 "link": link,
                 "image": image_url,
                 "time": article.get("published", ""),
-                "source": source
+                "source": source,
+                "sentiment": sentiment
             })
 
         return filtered_news
@@ -220,13 +222,16 @@ def upload_image_to_wp(image_url):
 
 
 # === POST TO WORDPRESS ===
-def post_to_wp(title, content, original_url, uploaded_image_url=None, media_id=None):
+def post_to_wp(title, content, original_url, uploaded_image_url=None, media_id=None, sentiment="unknown"):
     credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
     token = base64.b64encode(credentials.encode()).decode()
     headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json"}
 
+    sentiment_html = f"<p><strong>Sentimen Artikel:</strong> {sentiment.capitalize()}</p>"
     image_html = f"<img src='{uploaded_image_url}' alt='{title}'/><br>" if uploaded_image_url else ""
-    full_content = f"<h1>{title}</h1><br>{image_html}{content}<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>"
+    
+    full_content = f"<h1>{title}</h1><br>{image_html}{content}{sentiment_html}<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>"
+
 
     post_data = {
         "title": title,
@@ -365,6 +370,7 @@ def update_response_json(new_items):
             "source": item["source"],
             "fb_status": item["fb_status"],
             "wp_status": item["wp_status"],
+            "sentiment": item["sentiment"],
             "timestamp": item["timestamp"]
         }
         for item in new_items
@@ -422,7 +428,8 @@ def main():
                 time.sleep(2)
 
             media_id, uploaded_image_url = upload_image_to_wp(image_url)
-            wp_status = "Posted" if post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id) else "Failed"
+            wp_status = "Posted" if post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment")) else "Failed"
+
 
         all_results.append({
             "title": title_raw,
@@ -435,6 +442,7 @@ def main():
             "image": image_url,
             "fb_status": fb_status,
             "wp_status": wp_status,
+            "sentiment": news.get("sentiment", "unknown"),
             "timestamp": timestamp
         })
 
