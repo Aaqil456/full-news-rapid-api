@@ -122,23 +122,25 @@ def query_gemini(prompt):
 
 def translate_for_facebook(text):
     prompt = f"""
-Translate the following news into Malay.  
-Then, kindly write a short conclusion or summary of the news in less than 280 characters in 1 paragraph.  
-Only return the short conclusion without any explanation, heading, or intro phrase.  
-Use natural, conversational, friendly Malaysian Malay — like how a friend shares info.  
-Keep it simple, relaxed, and easy to understand.  
-Avoid using exaggerated slang words or interjections (such as "Eh," "Korang," "Woi," "Wooohooo," "Wooo," or anything similar).  
-No shouting words or unnecessary excitement.  
-Keep it informative, approachable, and casual — but clean and neutral.  
-Do not use emojis unless they appear in the original text.  
-Do not translate brand names or product names.  
-Do not phrase the summary as if it is referring to a news source — write it as a general insight or observation instead.  
-⚠️ Do NOT include phrases like "Terjemahan:", "Kesimpulan:", "Baiklah,", "Secara ringkas", "**Conclusion:**", "**Translation:**", or anything similar. Just give the final sentence.
+You are an AI content summarizer for social media.
 
-Original news:
-'{text}'
+Your task is to **read the following news snippet and return ONLY 1 paragraph** in Bahasa Melayu, **no more than 280 characters**.
+
+⚠️ STRICT RULES:
+- DO NOT translate the entire article.
+- DO NOT include any headings, quotes, intros, or explanations.
+- DO NOT start with phrases like "Berikut adalah", "Kesimpulan:", etc.
+- DO NOT say where the news came from.
+- Just write a short, casual, friendly, and informative conclusion — like what a Malaysian crypto friend might text in WhatsApp.
+
+Make it clean, neutral, and natural sounding. No emojis unless they appear in the original. No dramatic slang.
+
+---
+
+{text}
 """
     return query_gemini(prompt)
+
 
 
 def translate_for_wordpress(text):
