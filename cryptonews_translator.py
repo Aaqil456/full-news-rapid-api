@@ -22,8 +22,8 @@ ALLOWED_NEWS_DOMAINS = [
     "cointelegraph.com",
     "bitcoinist.com",
     "decrypt.co",
-    "cryptodaily.co.uk",
-    "bitcoinethereumnews.com"
+    "cryptodaily.co.uk"
+    
     
 ]
 
