@@ -22,9 +22,7 @@ ALLOWED_NEWS_DOMAINS = [
     "cointelegraph.com",
     "bitcoinist.com",
     "decrypt.co",
-    "cryptodaily.co.uk"
-    
-    
+    "cryptodaily.co.uk"    
 ]
 
 # === MAIN FUNCTION ===
@@ -46,7 +44,7 @@ def extract_domain(link):
 
 def fetch_news():
     url = "https://crypto-news51.p.rapidapi.com/api/v1/crypto/articles"
-    querystring = {"page": "1", "limit": "10", "time_frame": "24h", "format": "json"}
+    querystring = {"page": "1", "limit": "20", "time_frame": "24h", "format": "json"}
     headers = {
         "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
         "x-rapidapi-host": "crypto-news51.p.rapidapi.com"
