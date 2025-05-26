@@ -249,8 +249,9 @@ def post_to_wp(title, content, original_url, uploaded_image_url=None, media_id=N
     try:
         response = requests.post(f"{WP_URL}/posts", headers=headers, json=post_data)
         if response.status_code == 201:
+            wp_post = response.json()
             print(f"[Post Created] {title}")
-            return True
+            return wp_post.get("link")
         else:
             print(f"[Post Error] {response.status_code}: {response.text}")
     except Exception as e:
@@ -372,6 +373,7 @@ def update_response_json(new_items):
             "source": item["source"],
             "fb_status": item["fb_status"],
             "wp_status": item["wp_status"],
+            "wp_post_link": item["wp_post_link"],
             "sentiment": item["sentiment"],
             "timestamp": item["timestamp"]
         }
@@ -406,22 +408,9 @@ def main():
         image_url = news.get("image", "")
         timestamp = news.get("time", datetime.now().isoformat())
 
-        # === Facebook ===
-        fb_caption = "Skipped"
-        fb_status = "Skipped"
-        if source in ALLOWED_FB_SOURCES:
-            # Avoid crash if summary or content is None
-            summary_text = summary_raw.strip() if summary_raw else ""
-            content_text = content_raw[:300].strip() if content_raw else ""
-            snippet = f"{summary_text}\n\n{content_text}"
-            
-            fb_caption = translate_for_facebook(snippet)
-            if fb_caption != "Translation failed":
-                fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
 
 
-
-        # === WordPress === (unchanged)
+        # === WordPress === 
         wp_title, wp_content, wp_summary = "", "", ""
         wp_status = "Skipped"
         media_id, uploaded_image_url = None, None
@@ -436,7 +425,9 @@ def main():
                 time.sleep(2)
 
             media_id, uploaded_image_url = upload_image_to_wp(image_url)
-            wp_status = "Posted" if post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment")) else "Failed"
+            wp_post_link = post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment"))
+            wp_status = "Posted" if wp_post_link else "Failed"
+
 
 
         all_results.append({
@@ -450,12 +441,29 @@ def main():
             "image": image_url,
             "fb_status": fb_status,
             "wp_status": wp_status,
+            "wp_post_link": wp_post_link,
             "sentiment": news.get("sentiment", "unknown"),
             "timestamp": timestamp
         })
 
         time.sleep(3)
 
+    
+    # === Facebook ===
+    fb_caption = "Skipped"
+    fb_status = "Skipped"
+    if source in ALLOWED_FB_SOURCES and wp_post_link:
+        summary_text = summary_raw.strip() if summary_raw else ""
+        content_text = content_raw[:300].strip() if content_raw else ""
+        snippet = f"{summary_text}\n\n{content_text}"
+        
+        fb_text = translate_for_facebook(snippet)
+        if fb_text != "Translation failed":
+            fb_caption = f"{fb_text.strip()}\n\n📎 Baca penuh: {wp_post_link}"
+            fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
+    
+        
+    
     # === Save JSON ===
     
     update_response_json(all_results)
