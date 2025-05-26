@@ -408,7 +408,10 @@ def main():
         image_url = news.get("image", "")
         timestamp = news.get("time", datetime.now().isoformat())
 
-
+        # Default values
+        fb_caption = "Skipped"
+        fb_status = "Skipped"
+        wp_post_link = None
 
         # === WordPress === 
         wp_title, wp_content, wp_summary = "", "", ""
@@ -428,8 +431,18 @@ def main():
             wp_post_link = post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment"))
             wp_status = "Posted" if wp_post_link else "Failed"
 
+        # === Facebook ===
+        if source in ALLOWED_FB_SOURCES and wp_post_link:
+            summary_text = summary_raw.strip() if summary_raw else ""
+            content_text = content_raw[:300].strip() if content_raw else ""
+            snippet = f"{summary_text}\n\n{content_text}"
+            
+            fb_text = translate_for_facebook(snippet)
+            if fb_text != "Translation failed":
+                fb_caption = f"{fb_text.strip()}\n\n📎 Baca penuh: {wp_post_link}"
+                fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
 
-
+        # === Save Results ===
         all_results.append({
             "title": title_raw,
             "translated_facebook_post": fb_caption,
@@ -448,24 +461,7 @@ def main():
 
         time.sleep(3)
 
-    
-    # === Facebook ===
-    fb_caption = "Skipped"
-    fb_status = "Skipped"
-    if source in ALLOWED_FB_SOURCES and wp_post_link:
-        summary_text = summary_raw.strip() if summary_raw else ""
-        content_text = content_raw[:300].strip() if content_raw else ""
-        snippet = f"{summary_text}\n\n{content_text}"
-        
-        fb_text = translate_for_facebook(snippet)
-        if fb_text != "Translation failed":
-            fb_caption = f"{fb_text.strip()}\n\n📎 Baca penuh: {wp_post_link}"
-            fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
-    
-        
-    
     # === Save JSON ===
-    
     update_response_json(all_results)
 
     # === Summary Counts ===
