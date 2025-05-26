@@ -22,7 +22,8 @@ ALLOWED_NEWS_DOMAINS = [
     "cointelegraph.com",
     "bitcoinist.com",
     "decrypt.co",
-    "cryptodaily.co.uk"    
+    "cryptodaily.co.uk",   
+    "bitcoinethereumnews.com"
 ]
 
 # === MAIN FUNCTION ===
@@ -31,7 +32,8 @@ ALLOWED_FB_SOURCES = [
     "cointelegraph.com",
     "bitcoinist.com",
     "decrypt.co",
-    "cryptodaily.co.uk"
+    "cryptodaily.co.uk",
+    "bitcoinethereumnews.com"
 ]
 
 # === FETCH NEWS ===
