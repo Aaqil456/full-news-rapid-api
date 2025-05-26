@@ -408,11 +408,15 @@ def main():
         fb_caption = "Skipped"
         fb_status = "Skipped"
         if source in ALLOWED_FB_SOURCES:
-            # Give Gemini a small, digestible input (summary + partial content)
-            snippet = f"{summary_raw.strip()}\n\n{content_raw[:300].strip()}"
+            # Avoid crash if summary or content is None
+            summary_text = summary_raw.strip() if summary_raw else ""
+            content_text = content_raw[:300].strip() if content_raw else ""
+            snippet = f"{summary_text}\n\n{content_text}"
+            
             fb_caption = translate_for_facebook(snippet)
             if fb_caption != "Translation failed":
                 fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
+
 
 
         # === WordPress === (unchanged)
