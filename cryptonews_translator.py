@@ -405,7 +405,7 @@ def main():
 
     for idx, news in enumerate(fetched_news[:20]):
         print(f"\n[{idx+1}] Processing: {news.get('title')}")
-
+    
         source = news.get("source", "")
         title_raw = news.get("title", "")
         summary_raw = news.get("summary", "")
@@ -413,6 +413,12 @@ def main():
         original_url = news.get("link", "")
         image_url = news.get("image", "")
         timestamp = news.get("time", datetime.now().isoformat())
+    
+        # 🚫 Skip if content or summary is missing or too short
+        if not content_raw or len(content_raw.strip()) < 20 or not summary_raw or len(summary_raw.strip()) < 20:
+            print(f"[SKIPPED] Empty or too short content/summary for: {title_raw}")
+            continue
+
 
         # Default values
         fb_caption = "Skipped"
