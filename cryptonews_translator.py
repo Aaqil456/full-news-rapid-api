@@ -3,6 +3,7 @@ import requests
 import json
 import time
 import base64
+import mimetypes
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -46,14 +47,7 @@ def extract_domain(link):
 def fetch_news():
     url = "https://crypto-news51.p.rapidapi.com/api/v1/crypto/articles"
     
-    # Loop through the first 3 pages
-    for page in range(1, 4):
-        querystring = {
-            "page": str(page),
-            "limit": "100",
-            "time_frame": "24h",
-            "format": "json"
-        }
+    querystring = {"page":"1","limit":"100","time_frame":"24h","format":"json"}
 
 
     
@@ -118,8 +112,8 @@ def query_gemini(prompt):
             if response.status_code == 200:
                 data = response.json()
                 return data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
-            elif response.status_code == 429:
-                print(f"[Rate Limit] Retry {attempt+1}...")
+            elif response.status_code in [429, 503]:
+                print(f"[Retryable Error] {response.status_code} - Attempt {attempt+1}")
                 time.sleep(2 ** attempt)
             else:
                 print(f"[Gemini Error] {response.status_code}: {response.text}")
@@ -211,10 +205,12 @@ def upload_image_to_wp(image_url):
 
     # Filename from URL
     file_name = image_url.split("/")[-1] or "image.jpg"
+    mime_type, _ = mimetypes.guess_type(file_name)
+    
     headers = {
         "Authorization": f"Basic {token}",
         "Content-Disposition": f"attachment; filename={file_name}",
-        "Content-Type": "image/jpeg",  # You can dynamically detect MIME type later if needed
+        "Content-Type": mime_type or "image/jpeg",  # fallback if unknown
     }
 
     try:
@@ -424,33 +420,33 @@ def main():
         wp_post_link = None
 
         # === WordPress === 
-        # wp_title, wp_content, wp_summary = "", "", ""
-        # wp_status = "Skipped"
-        # media_id, uploaded_image_url = None, None
+        wp_title, wp_content, wp_summary = "", "", ""
+        wp_status = "Skipped"
+        media_id, uploaded_image_url = None, None
 
-        # if source in ALLOWED_NEWS_DOMAINS:
-        #     for _ in range(3):
-        #         wp_title = translate_title(title_raw)
-        #         wp_content = translate_for_wordpress(content_raw)
-        #         wp_summary = translate_for_wordpress(summary_raw)
-        #         if wp_title != "Translation failed" and wp_content != "Translation failed":
-        #             break
-        #         time.sleep(2)
+        if source in ALLOWED_NEWS_DOMAINS:
+            for _ in range(3):
+                wp_title = translate_title(title_raw)
+                wp_content = translate_for_wordpress(content_raw)
+                wp_summary = translate_for_wordpress(summary_raw)
+                if wp_title != "Translation failed" and wp_content != "Translation failed":
+                    break
+                time.sleep(2)
 
-        #     media_id, uploaded_image_url = upload_image_to_wp(image_url)
-        #     wp_post_link = post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment"))
-        #     wp_status = "Posted" if wp_post_link else "Failed"
+            media_id, uploaded_image_url = upload_image_to_wp(image_url)
+            wp_post_link = post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment"))
+            wp_status = "Posted" if wp_post_link else "Failed"
 
         # === Facebook ===
-        # if source in ALLOWED_FB_SOURCES and wp_post_link:
-        #     summary_text = summary_raw.strip() if summary_raw else ""
-        #     content_text = content_raw[:300].strip() if content_raw else ""
-        #     snippet = f"{summary_text}\n\n{content_text}"
+        if source in ALLOWED_FB_SOURCES and wp_post_link:
+            summary_text = summary_raw.strip() if summary_raw else ""
+            content_text = content_raw[:300].strip() if content_raw else ""
+            snippet = f"{summary_text}\n\n{content_text}"
             
-        #     fb_text = translate_for_facebook(snippet)
-        #     if fb_text != "Translation failed":
-        #         fb_caption = f"{fb_text.strip()}\n\n📎 Baca penuh: {wp_post_link}"
-        #         fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
+            fb_text = translate_for_facebook(snippet)
+            if fb_text != "Translation failed":
+                fb_caption = f"{fb_text.strip()}\n\n📎 Baca penuh: {wp_post_link}"
+                fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
                 
 
         # === Save Results ===
