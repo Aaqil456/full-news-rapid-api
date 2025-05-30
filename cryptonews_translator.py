@@ -424,33 +424,34 @@ def main():
         wp_post_link = None
 
         # === WordPress === 
-        wp_title, wp_content, wp_summary = "", "", ""
-        wp_status = "Skipped"
-        media_id, uploaded_image_url = None, None
+        # wp_title, wp_content, wp_summary = "", "", ""
+        # wp_status = "Skipped"
+        # media_id, uploaded_image_url = None, None
 
-        if source in ALLOWED_NEWS_DOMAINS:
-            for _ in range(3):
-                wp_title = translate_title(title_raw)
-                wp_content = translate_for_wordpress(content_raw)
-                wp_summary = translate_for_wordpress(summary_raw)
-                if wp_title != "Translation failed" and wp_content != "Translation failed":
-                    break
-                time.sleep(2)
+        # if source in ALLOWED_NEWS_DOMAINS:
+        #     for _ in range(3):
+        #         wp_title = translate_title(title_raw)
+        #         wp_content = translate_for_wordpress(content_raw)
+        #         wp_summary = translate_for_wordpress(summary_raw)
+        #         if wp_title != "Translation failed" and wp_content != "Translation failed":
+        #             break
+        #         time.sleep(2)
 
-            media_id, uploaded_image_url = upload_image_to_wp(image_url)
-            wp_post_link = post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment"))
-            wp_status = "Posted" if wp_post_link else "Failed"
+        #     media_id, uploaded_image_url = upload_image_to_wp(image_url)
+        #     wp_post_link = post_to_wp(wp_title, wp_content, original_url, uploaded_image_url, media_id, news.get("sentiment"))
+        #     wp_status = "Posted" if wp_post_link else "Failed"
 
         # === Facebook ===
-        if source in ALLOWED_FB_SOURCES and wp_post_link:
-            summary_text = summary_raw.strip() if summary_raw else ""
-            content_text = content_raw[:300].strip() if content_raw else ""
-            snippet = f"{summary_text}\n\n{content_text}"
+        # if source in ALLOWED_FB_SOURCES and wp_post_link:
+        #     summary_text = summary_raw.strip() if summary_raw else ""
+        #     content_text = content_raw[:300].strip() if content_raw else ""
+        #     snippet = f"{summary_text}\n\n{content_text}"
             
-            fb_text = translate_for_facebook(snippet)
-            if fb_text != "Translation failed":
-                fb_caption = f"{fb_text.strip()}\n\n📎 Baca penuh: {wp_post_link}"
-                fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
+        #     fb_text = translate_for_facebook(snippet)
+        #     if fb_text != "Translation failed":
+        #         fb_caption = f"{fb_text.strip()}\n\n📎 Baca penuh: {wp_post_link}"
+        #         fb_status = "Posted" if post_to_facebook(image_url, fb_caption) else "Failed"
+                
 
         # === Save Results ===
         all_results.append({
