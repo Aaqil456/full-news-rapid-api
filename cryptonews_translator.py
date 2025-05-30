@@ -50,7 +50,7 @@ def fetch_news():
     for page in range(1, 4):
         querystring = {
             "page": str(page),
-            "limit": "20",
+            "limit": "100",
             "time_frame": "24h",
             "format": "json"
         }
