@@ -45,7 +45,18 @@ def extract_domain(link):
 
 def fetch_news():
     url = "https://crypto-news51.p.rapidapi.com/api/v1/crypto/articles"
-    querystring = {"page": "1", "limit": "20", "time_frame": "24h", "format": "json"}
+    
+    # Loop through the first 3 pages
+    for page in range(1, 4):
+        querystring = {
+            "page": str(page),
+            "limit": "20",
+            "time_frame": "24h",
+            "format": "json"
+        }
+
+
+    
     headers = {
         "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
         "x-rapidapi-host": "crypto-news51.p.rapidapi.com"
