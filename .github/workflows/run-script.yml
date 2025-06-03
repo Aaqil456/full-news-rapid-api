@@ -2,8 +2,8 @@ name: Run Translation Script and Post to WordPress & Facebook
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "0 * * * *"  # Run hourly if you want automation
+  schedule:
+    - cron: "*/15 * * * *"  # Run every 15 minutes
 
 permissions:
   contents: write
